@@ -11,22 +11,17 @@ function localStorageReview(){
     } else{
         projectArray = JSON.parse(localStorage.getItem("project"));
 
-        projectArray.map(object => {object.status = false})
-        projectArray[0].status = true;
-
-        const indexStatus = projectArray.map(object => object.status).indexOf(true);
+        projectArray.filter(todo => todo).forEach(todo => todo.status = false);
         
-        getNameProject(projectArray[indexStatus].name);
+        projectArray[0].status = true;
+        
+        getNameProject(projectArray.find(({status}) => status === true).name);
 
-        projectArray.map(object => {
-            setDOM(object.name);
-        });
+        projectArray.filter(todo => setDOM(todo.name));
 
-        projectArray[indexStatus].tasks.map(task => {
-            showTask(task.name, task.date);
-        });
+        projectArray.find(({status}) => status === true).tasks.forEach(task => showTask(task.name, task.date));
 
-        selectTask()
+        selectTask();
     }
 
 };

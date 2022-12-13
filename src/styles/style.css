@@ -210,3 +210,30 @@ body #overlay{
     height: 60vh;
     overflow-x: scroll;
 }
+
+#btn-task{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#add-task{
+    width: 100px;
+    border-radius: 5px;
+    border: 1px solid var(--text-color);
+    background: none;
+    color: var(--text-color);
+}
+
+.inputClass{
+    border-radius: 5px;
+    outline: none;
+    background: none;
+    border: 1px solid var(--text-color);
+    padding-left: 10px;
+    color: var(--text-color);
+}
+
+.inputClass::placeholder{
+    color: var(--text-color);
+}

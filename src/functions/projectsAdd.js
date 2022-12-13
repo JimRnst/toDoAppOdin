@@ -6,47 +6,37 @@ const contentMain = document.querySelector("#content-main");
 
 let projectArray = [];
 
-// crear objeto
-export class Project{
-    constructor(name, tasks){
-        this.name = name;
-        this.tasks = [];
-        this.status = false;
-    }
-}
-
 function runApp(){
     addTask();
     bodySelect.addEventListener("click", (e) => {
 
         if(e.target.className === "project-box"){
-           
-                const index = projectArray.map(object => object.name).indexOf(e.target.innerText);
-                const indexStatus = projectArray.map(object => object.status).indexOf(true);
-                contentMain.innerHTML = "";
-                if(projectArray[index].status === false){
-                    projectArray.map(object => {object.status = false})
-                    projectArray[index].status = true;
+            const findWtName = projectArray.find(({name}) => name === e.target.innerText);
+            const findWtStatus = projectArray.find(({status}) => status === true);
+                
+            contentMain.innerHTML = "";
 
-                    projectArray[index].tasks.map(task => {
-                        showTask(task.name, task.date)
-                    });
-                    selectTask();
-                } else{
-                    projectArray[indexStatus].tasks.map(task => {
-                        showTask(task.name, task.date);
-                    });
-                    selectTask();
-                }
-                getNameProject(projectArray[index].name);
-            
+            if(!findWtName.status){
+                findWtStatus.status = false;
+                findWtName.status = true;
+                findWtName.tasks.forEach(task => {
+                    task.status ? showTask(task.name, task.date, true) : showTask(task.name, task.date, false);
+                });
+            } else{
+                findWtName.tasks.forEach(task => {
+                    task.status ? showTask(task.name, task.date, true) : showTask(task.name, task.date, false);
+                });
+            };
+
+            getNameProject(e.target.innerText);
+            selectTask(); 
         };
 
         if(e.target.id === "btn-add"){
             overlay();
         };
 
-        if(e.target.className === "fa-solid fa-x"){
+        if(e.target.className === "icon fa-x"){
             removeOverlay();
         };
 
@@ -56,66 +46,47 @@ function runApp(){
                 alert("Please, set a project name");
             } else{
                 contentMain.innerHTML = "";
-                createNewProject(getName.value, "array");
+                createNewProject(getName.value);
                 removeOverlay();
-                const index = projectArray.map(object => object.name).indexOf(getName.value);
-                //convierte el status del proyecto agregado en true, y los demas en false
-                if(projectArray[index].status === false){
-                    projectArray.map(object => {object.status = false})
-                    contentMain.innerHTML = "";
-                    projectArray[index].status = true;
-                }
-                
-                if(projectArray[index].tasks.length === 0){
-                    contentMain.innerHTML = "";
-                    createTask(index, `${getName.value} example task`, `${getName.value} example date`);
-                    showTask(`${getName.value} example task`, `${getName.value} example date`)
-                    selectTask();
-                };
-
+                projectArray.filter(todo => todo).forEach(todo => todo.status = false);
+                projectArray.find(({name}) => name === getName.value).status = true;
+                createTask(`${getName.value} example task`, `${getName.value} example date`);
+                showTask(`${getName.value} example task`, `${getName.value} example date`);
                 localStorage.setItem("project", JSON.stringify(projectArray))
             };
-
+            selectTask();
         };
 
-        if(e.target.classList.contains("delete-project")){
-            const index = projectArray.map(object => object.name).indexOf(e.target.parentElement.innerText) //Search project name in array
-
-            if(projectArray[index].status === true){
+        if(e.target.classList.contains("delete-project") && projectArray.length > 1){
+            //Search project name in array
+            const findTodo = projectArray.find(({name}) => name === e.target.parentElement.innerText);
             
-                if(projectArray.length>1){
+            if(findTodo.status === true){
+            
+                const index = projectArray.findIndex(todo => todo.name === e.target.parentElement.innerText);
+                if(index == 0){
+                    projectArray[parseInt(index)+1].status = true;
+                };
 
-                    if(e.target.parentElement.id >= 1){
-                        projectArray.map(object => {object.status = false})
-                        projectArray[parseInt(e.target.parentElement.id)-1].status = true;
-                    } 
-                    
-                    
-                   if(e.target.parentElement.id == 0){
-                        projectArray[parseInt(e.target.parentElement.id)+1].status = true;
-                   }
+                if(index >= 1){
+                    projectArray[parseInt(index)-1].status = true;
+                    projectArray.splice(index, 1);
+                };
 
-                    projectArray.splice(index, 1); //delete project of array
-                    document.getElementById(e.target.parentElement.id).remove(); //remove of DOM
-                    
-                }
-              
-                const indexStatus = projectArray.map(object => object.status).indexOf(true);
-                console.log(indexStatus)
-                getNameProject(projectArray[indexStatus].name);
-                projectArray[indexStatus].tasks.map(task => {
-                    contentMain.innerHTML = "";
-                    showTask(task.name, task.date)
+                document.getElementById(e.target.parentElement.id).remove(); //remove of DOM
+
+                const searchTodoActive = projectArray.find(({status}) => status === true);
+                contentMain.innerHTML = "";
+                getNameProject(searchTodoActive.name)
+                searchTodoActive.tasks.forEach(todo => {
+                    todo.status ? showTask(todo.name, todo.date, true) : showTask(todo.name, todo.date, false);
                 });
 
                 localStorage.setItem("project", JSON.stringify(projectArray));
             } else{
-
-                if(projectArray.length>1){
-                    projectArray.splice(index, 1); //delete project of array
-                    document.getElementById(e.target.parentElement.id).remove(); //remove of DOM
-                    localStorage.setItem("project", JSON.stringify(projectArray));
-                };
+                projectArray.splice(projectArray.findIndex(todo => todo.name === e.target.parentElement.innerText), 1); //delete project of array
+                document.getElementById(e.target.parentElement.id).remove(); //remove of DOM
+                localStorage.setItem("project", JSON.stringify(projectArray));
             };
         };
     });
@@ -125,24 +96,24 @@ function runApp(){
 function overlay(){
     const creteDiv = document.createElement("div");
     creteDiv.setAttribute("id", "overlay");
-     creteDiv.innerHTML = `
-         <div id="card-add-new-project">
-             <div id="close"><i class="fa-solid fa-x"></i></div>
-             <div id="card-title">Project Name</div>
-             <div id="card-sub">Max length: 20</div>
-             <input type="text" name="productName" id="productName" maxlength="20" autofocus>
-             <div id="btn-submit">
-                 <button id="submit">Submit</button>
-             </div>
-         </div>
-     `
+    creteDiv.innerHTML = `
+        <div id="card-add-new-project">
+            <div id="close"><img class="icon fa-x" src="/assets/x-mark.svg"></div>
+            <div id="card-title">Project Name</div>
+            <div id="card-sub">Max length: 20</div>
+            <input type="text" name="productName" id="productName" maxlength="20" autofocus>
+            <div id="btn-submit">
+                <button id="submit">Submit</button>
+            </div>
+        </div>
+    `;
     bodySelect.prepend(creteDiv);
 
     const inputForm = document.querySelector("#productName");
     inputForm.addEventListener("keyup", () => {
-        const validate = projectArray.map(object => object.name).indexOf(inputForm.value)
-        if(validate >= 0){
-            alert("This project name is already exist")
+        const validate = projectArray.find(({name}) => name === inputForm.value);
+        if(validate){
+            alert("This project name is already exist");
         }
     })
 };
@@ -153,10 +124,9 @@ function removeOverlay(){
 };
 
 function createNewProject(name){
-    const projectName = new Project(`${name}`, "task");
-    projectArray = [...projectArray, projectName]; //usando spreed operator .push() es posible
-    setDOM(projectName.name);
-    getNameProject(projectName.name);
+    projectArray.push({name: name, tasks: [], status: false});
+    setDOM(name);
+    getNameProject(name);
 };
 
 function getNameProject(name){
@@ -172,9 +142,10 @@ function setDOM(name){
         creteDiv.setAttribute("id", `${i}`)
         creteDiv.classList.add("project-box");
         creteDiv.innerHTML = `
-            <span>${projectArray[i].name}</span><i id="" class="fa-solid fa-trash delete-project">
+            <span>${projectArray[i].name}</span><img class="icon delete-project" src="/assets/trash.svg">
         `;
 
+        // <span>${projectArray[i].name}</span><i class="fa-solid fa-trash delete-project">
         //<i class="fa-solid fa-trash">
 
         projectBox.appendChild(creteDiv); //agregar al document
@@ -187,12 +158,9 @@ function createDefaultProject(){
     const containProject = document.querySelector("#contain-project");
     const creteDiv = document.createElement("div");
     creteDiv.innerHTML = `
-        <div class="project-box">example project<i class="fa-solid fa-trash"></i></div>
+        <div class="project-box">example project<img class="icon delete-project" src="/assets/trash.svg"></div>
     `
     containProject.prepend(creteDiv)
 }
 
 export {runApp, bodySelect, projectArray, createDefaultProject, createDefaultTask, setDOM, getNameProject};
-
-
-// <div class="project">Project 1 <i class="fa-solid fa-trash"></i></div>

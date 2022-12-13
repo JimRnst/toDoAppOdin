@@ -23,10 +23,19 @@ body{
       "menu content";
 }
 
-i.fa-trash{
+.icon{
     cursor: pointer;
+    width: 15px;
 }
 
-i.fa-trash:hover{
-    scale: 1.05;
+.icon.plus{
+    width: 10px;
+}
+
+.icon.remove-form-task{
+    filter: invert(100%);
+}
+
+.icon:hover{
+    scale: 1.10;
 }
